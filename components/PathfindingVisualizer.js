@@ -23,7 +23,7 @@ const Node = {
 };
 
 // Memoized individual cell component for better performance
-const Cell = memo(({ type, onMouseDown, onMouseEnter, onMouseUp }) => (
+const Cell = memo(({ type, onClick, onMouseDown, onMouseEnter, onMouseUp }) => (
   <div
     className={`h-6 w-6 border border-gray-200 transition-all duration-150 hover:opacity-80
       ${type === Node.WALL ? 'bg-gray-800' : ''}
@@ -33,6 +33,7 @@ const Cell = memo(({ type, onMouseDown, onMouseEnter, onMouseUp }) => (
       ${type === Node.PATH ? 'bg-yellow-400 animate-bounce' : ''}
       ${type === Node.EMPTY ? 'bg-white' : ''}
     `}
+    onClick={onClick}
     onMouseDown={onMouseDown}
     onMouseEnter={onMouseEnter}
     onMouseUp={onMouseUp}
@@ -284,11 +285,13 @@ function PathfindingVisualizer() {
                     <Cell
                       key={`${rowIdx}-${colIdx}`}
                       type={node.type}
+                      onClick={() => handleNodeClick(rowIdx, colIdx)}
                       onMouseDown={() => {
                         setIsMousePressed(true);
-                        handleNodeClick(rowIdx, colIdx);
                       }}
-                      onMouseEnter={() => isMousePressed && handleNodeClick(rowIdx, colIdx)}
+                      onMouseEnter={() =>
+                        isMousePressed && currentTool === 'wall' && handleNodeClick(rowIdx, colIdx)
+                      }
                       onMouseUp={() => setIsMousePressed(false)}
                     />
                   ))
