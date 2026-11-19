@@ -2,10 +2,7 @@
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Flag,
   Info,
-  MapPin,
-  MousePointer2,
   Play,
   RotateCcw,
   Square,
@@ -154,16 +151,17 @@ function PathfindingVisualizer() {
 
     setGrid((previousGrid) => previousGrid.map((gridRow) => gridRow.map((node) => {
       const touched = cells.some((cell) => cell.row === node.row && cell.col === node.col);
-      if (!touched || isEndpoint(node.row, node.col)) return { ...node };
+      const isWall = touched && !isEndpoint(node.row, node.col) ? mode === 'paint' : node.isWall;
       return {
         ...node,
-        isWall: mode === 'paint',
+        isWall,
         isVisited: false,
         isPath: false,
         distance: Infinity,
         previousNode: null,
       };
     })));
+    setFeedback(null);
   }, [isEndpoint]);
 
   const moveEndpoint = useCallback((kind, target) => {
@@ -182,7 +180,7 @@ function PathfindingVisualizer() {
   }, [isEndpoint]);
 
   const handlePointerDown = useCallback((event) => {
-    if (isAnimating) return;
+    if (event.button !== 0 || isAnimating) return;
     event.preventDefault();
     const targetCell = cellFromTarget(event.target);
     if (!targetCell) return;
@@ -299,9 +297,7 @@ function PathfindingVisualizer() {
             </Alert>
           )}
           <div className="mb-4 flex flex-wrap justify-center gap-2">
-            <div className="flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-sm">
-              <MousePointer2 className="h-4 w-4" /> Wall: click/drag
-            </div>
+            <span className="self-center text-sm text-gray-600">Click and drag empty cells to draw walls</span>
             <button type="button" onClick={dijkstra} disabled={isAnimating} className="flex items-center gap-2 rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50">
               <Play className="h-4 w-4" /> Visualize
             </button>
@@ -313,8 +309,8 @@ function PathfindingVisualizer() {
             </button>
           </div>
           <div className="mb-5 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-gray-700">
-            <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-green-500" /> Start</span>
-            <span className="flex items-center gap-2"><Flag className="h-4 w-4 text-red-500" /> End</span>
+            <span className="flex items-center gap-2"><Square className="h-4 w-4 fill-green-500 text-green-500" /> Start</span>
+            <span className="flex items-center gap-2"><Square className="h-4 w-4 fill-red-500 text-red-500" /> End</span>
             <span className="flex items-center gap-2"><Square className="h-4 w-4 fill-gray-800 text-gray-800" /> Wall</span>
             <span className="flex items-center gap-2"><Square className="h-4 w-4 fill-blue-200 text-blue-200" /> Visited</span>
             <span className="flex items-center gap-2"><Square className="h-4 w-4 fill-yellow-400 text-yellow-400" /> Path</span>
